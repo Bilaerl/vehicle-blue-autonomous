@@ -21,7 +21,17 @@ def generate_launch_description():
         name="navigator"
     )
 
+    gz_bridge_node = Node(
+        name="gz_bridge",
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+        ]
+    )
+
     return LaunchDescription([
         gazebosim_node,
-        navigator_node
+        navigator_node,
+        gz_bridge_node
     ])
