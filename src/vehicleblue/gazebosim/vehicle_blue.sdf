@@ -256,6 +256,44 @@
             </plugin>
         </model>
 
+        <model name="destination" canonical_link="main_link">
+            <pose relative_to='world'>10 5 0 0 0 0</pose>   <!--the pose is relative to the world by default-->
+            <link name='main_link'>
+                <pose relative_to='__model__'>0 0 0 0 0 0</pose>
+                <inertial> <!--inertial properties of the link mass, inertia matix-->
+                    <mass>0.5</mass>
+                    <inertia>
+                        <ixx>0.177083</ixx>
+                        <ixy>0</ixy>
+                        <ixz>0</ixz>
+                        <iyy>0.177083</iyy>
+                        <iyz>0</iyz>
+                        <izz>0.020833</izz>
+                    </inertia>
+                </inertial>
+                <visual name='visual'>
+                    <geometry>
+                        <box>
+                            <size>0.5 0.5 2.0</size> <!--question: this size is in meter-->
+                        </box>
+                    </geometry>
+                    <!--let's add color to our link-->
+                    <material>
+                        <ambient>0.9 0.4 0.2 1</ambient>
+                        <diffuse>0.9 0.4 0.2 1</diffuse>
+                        <specular>0.9 0.4 0.2 1</specular>
+                    </material>
+                </visual>
+                <collision name='collision'>
+                    <geometry>
+                        <box>
+                            <size>0.5 0.5 2.0</size>
+                        </box>
+                    </geometry>
+                </collision>
+            </link>
+        </model>
+
         <!-- Moving Left-->
         <plugin filename="gz-sim-triggered-publisher-system"
                 name="gz::sim::systems::TriggeredPublisher">
