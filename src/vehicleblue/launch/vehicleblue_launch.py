@@ -27,6 +27,7 @@ def generate_launch_description():
         executable="parameter_bridge",
         arguments=[
             "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+            "/model/vehicle_blue/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry",
         ]
     )
 
