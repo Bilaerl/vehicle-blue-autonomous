@@ -2,10 +2,13 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -31,27 +34,68 @@ class Navigator : public rclcpp::Node
   private:
     void timer_callback()
     {
+      float destination_x = 10.0, destination_y = 5.0;      
+
+      // get distance between vehicle and destination
+      float distance_x = destination_x - this->vehicle_x;
+      float distance_y = destination_y - this->vehicle_y;
+
+      // turning distance into polar coordinates
+      float norm_distance = std::sqrt(std::pow(distance_x, 2) + std::pow(distance_y, 2));
+      float distance_yaw = std::acos(distance_x/norm_distance);
+      float yaw = distance_yaw - this->vehicle_yaw;
+
+      // impose a speed limit
+      if (norm_distance > 1.5){
+        norm_distance = 1.5;
+      }
+      else if (norm_distance < 0.0001){
+        norm_distance = 0.0;
+      }
+
+      // prepare and publish twist message
       auto message = geometry_msgs::msg::Twist();
-      message.linear.x = 0.5;
+      message.linear.x = norm_distance;
       message.linear.y = 0.0;
       message.linear.z = 0.0;
       message.angular.x = 0.0;
       message.angular.y = 0.0;
-      message.angular.z = 0.0;
+      message.angular.z = yaw;
       
-      RCLCPP_INFO(this->get_logger(), "Publishing: '%f'", message.linear.x);
+      RCLCPP_INFO(this->get_logger(), "Publishing: %f  %f", message.linear.x, message.angular.z);
       publisher_->publish(message);
     }
 
-    void topic_callback(const nav_msgs::msg::Odometry & msg) const
+    void topic_callback(const nav_msgs::msg::Odometry & msg)
     {
-      RCLCPP_INFO(this->get_logger(), "I heard: '%f'", msg.pose.pose.position.x);
+      // convert quarternion to rpy
+      double roll, pitch, yaw;
+
+      tf2::Quaternion q(
+        msg.pose.pose.orientation.x,
+        msg.pose.pose.orientation.y,
+        msg.pose.pose.orientation.z,
+        msg.pose.pose.orientation.w);
+
+      tf2::Matrix3x3 m(q);
+      m.getRPY(roll, pitch, yaw);
+
+      // save vehicle position and orientation
+      this->vehicle_x = msg.pose.pose.position.x;
+      this->vehicle_y = msg.pose.pose.position.y;
+      this->vehicle_yaw = yaw;
+
+      RCLCPP_INFO(this->get_logger(), 
+      "Saved Odometry: %f  %f  %f", this->vehicle_x, this->vehicle_y, this->vehicle_yaw);
+    
     }
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscription_;
     size_t count_;
+
+    float vehicle_x = 0.0, vehicle_y = 0.0, vehicle_yaw=0.0;
 };
 
 

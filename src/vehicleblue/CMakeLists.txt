@@ -10,9 +10,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
 add_executable(navigator src/navigator.cpp)
-ament_target_dependencies(navigator rclcpp geometry_msgs nav_msgs)
+ament_target_dependencies(navigator rclcpp geometry_msgs nav_msgs tf2)
 
 # install navigator node
 install(TARGETS navigator
